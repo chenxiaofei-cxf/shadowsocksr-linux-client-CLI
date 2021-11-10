@@ -38,74 +38,44 @@ Linux(`ubuntu 16.10`)上shadowsocksr Python客户端的配置，其实ssr部分�
     ssr install
     ssr config # 目前只能配置单服务器版本，多服务器版本以后再添加
 
-* 配置本地代理服务器[polipo](https://wiki.archlinux.org/index.php/Polipo_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87))配合`proxychains`在终端使用代理。
 
-> 目前只在ubuntu16.10测试通过，ubuntu14.04以后大约都是可以的。CentOS官方源没有polipo软件包，需要编译安装或者添加第三方软件源。是的虽然polipo停止维护了但是这里我依然使用他，没有问什么。
 
->> shadowsocks以及shadowsocksR服务端本身只能提供socks5代理，但是多数应用使用http/https协议，所以需要一个代理软件把socks5协议的流量转换成http/https的流量，下面是一种小而快的缓存web代理服务器的安装方式。
+> shadowsocks以及shadowsocksR服务端本身只能提供socks5代理，但是多数应用使用http/https协议，所以需要一个代理软件把socks5协议的流量转换成http/https的流量，下面是一种小而快的缓存web代理服务器的安装方式。
 
-    # 安装polipo
-    sudo apt-get install polipo
-    # 修改polipo的配置文件`/etc/polipo/config`:
-    logSyslog = true
-    logFile = /var/log/polipo/polipo.log
+这边使用privoxy将socks5 代理转换成http代理
 
-    proxyAddress = "0.0.0.0"
+* 安装privoxy
 
-    socksParentProxy = "127.0.0.1:1080"
-    socksProxyType = socks5
+```shell
+sudo apt-get install proxy
+```
 
-    chunkHighMark = 50331648
-    objectHighMark = 16384
+* 配置privoxy
 
-    serverMaxSlots = 64
-    serverSlots = 16
-    serverSlots1 = 32
+注释掉 `listen-address `那两行
+在最后面添加
 
-    # 开启polipo服务
-    sudo systemctl enable polipo
+```shell
+forward-socks5t   /   127.0.0.1:1080 .
+listen-address  127.0.0.1:8118
+```
 
-    # 重启polipo服务
-    sudo systemctl restart polipo
+* 启动 privoxy
 
-    #因为之后会使用proxychains自动切换代理地址，所以不需要在终端中设置全局变量。
-    #export http_proxy="http://127.0.0.1:8123/" # 不再这样设置
-    #export https_proxy="https://127.0.0.1:8123/" # 不再这样设置
+```shell
+sudo service privoxy restart
+```
 
-    # 安装proxychains
-    # 方法有两种，第一种是直接从软件源下载proxychains4-ng，这种安装方法不用自己复制配置文件。
-    sudo apt-get install proxychains4-ng -y
-    # 第二种是自己编译安装并且搞定配置文件，这个方法适用于无法从软件源里下载到这个软件的环境
-    # 安装git
-    sudo apt-get install -y git
+* 使用http代理
 
-    # 下载proxychains源码
-    git clone https://github.com/rofl0r/proxychains-ng.git
+```shell
+export ALL_PROXY='http://127.0.0.1:8118'
+```
 
-    # 切换目录
-    cd proxychains-ng
-
-    # 编译
-    ./configure
-    make && make install
-
-    # 复制配置文件
-    cp ./src/proxychains.conf /etc/proxychains.conf
-
-    # 删除源码（可选）
-    cd .. && rm -rf proxychains-ng
-
-    # 编辑配置文件
-    vim /etc/proxychains.conf
-    # 配置如下,我们使用polipo的代理端口8123,用户为root，pass类型为secret。
-    [ProxyList]
-    #type    ip        port [user pass]
-    http     127.0.0.1 8123 root secret
-
-    # 接着测试IP地址，若成功则返回地址当为代理服务器的地址而不是真实地址。
-    sudo proxychains4 curl -i http://ip.cn
-
-* 单独为Chrome浏览器配置代理软件SwitchyOmega
+* 取消代理
+```shell
+unset ALL_PROXY
+```
 
 > [SwitchyOmega官网](https://www.switchyomega.com)
 
