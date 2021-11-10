@@ -52,6 +52,8 @@ sudo apt-get install proxy
 
 * 配置privoxy
 
+sudo vi /etc/privoxy/config 
+
 注释掉 `listen-address `那两行
 在最后面添加
 
