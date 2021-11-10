@@ -77,11 +77,6 @@ export ALL_PROXY='http://127.0.0.1:8118'
 unset ALL_PROXY
 ```
 
-> [SwitchyOmega官网](https://www.switchyomega.com)
-
-> 在上面的链接里下载适合自己浏览器版本的`SwitchyOmega`安装文件，打开Chrome浏览器地址栏输入`chrome://extensions`,打开文件管理器，将刚刚下载的`*.crx`文件用鼠标拖入浏览器中`chrome://extensions`页面下开始安装。本教程附带一份SwitchyOmega.crx，如果不能安装则自己下载。
-
-> 进入[SwitchyOmega设置教程](https://www.switchyomega.com/settings.html)，按照教程设置`SwitchyOmega`，注意需要SSR服务正确配置并开启。之后Chrome就可以正常科学上网了。如果配置文件不能下载，本文档带有[GFWList.bak](https://github.com/mengmengmengqiang/shadowsocksr-linux-client-CLI/blob/master/GFWList.bak)备份,自行下载使用。
 
 * 设置SSR服务开机自动启动
 
@@ -90,6 +85,7 @@ unset ALL_PROXY
     # 创建服务控制文件
     vim /lib/systemd/system/ssr.service
 
+```shell
     # 服务控制文件内容：
     [Unit]
     # 描述服务
@@ -97,23 +93,21 @@ unset ALL_PROXY
     # 用于指定服务启动的前置条件
     After=network.target
     # 帮助文件的地址如http://baidu.com/ ，可缺省
-    Documentation=https://github.com/mengmengmengqiang/shadowsocksr-linux-client-CLI
+    Documentation=https://github.com/chenxiaofei-cxf/shadowsocksr-linux-client-CLI
     Wants=network.target
 
     [Service]
     Type=forking
-    PIDFile=/var/run/shadowsocks.pid
     # 服务启动命令，此项必填
-    ExecStart=/usr/bin/python /usr/local/share/shadowsocksr/shadowsocks/local.py --pid-file /var/run/shadowsocks.pid -d start -c /usr/local/share/shadowsocksr/config.json
+    ExecStart=/usr/bin/python /usr/local/share/shadowsocksr/shadowsocks/local.py -d start -c /usr/local/share/shadowsocksr/config.json
     # 服务终止命令，可缺省
-    ExecStop=/usr/bin/python /usr/local/share/shadowsocksr/shadowsocks/local.py --pid-file /var/run/shadowsocks.pid -d stop -c /usr/local/share/shadowsocksr/config.json
+    ExecStop=/usr/bin/python /usr/local/share/shadowsocksr/shadowsocks/local.py -d stop -c /usr/local/share/shadowsocksr/config.json
 
     # 用来定义如何启动，以及是否开机启动
     [Install]
     # 当服务开机启动后，会放入什么文件夹，影响启动顺序
     WantedBy=multi-user.target
-    # 保存文件退出并运行命令刷新守护进程
-    sudo systemctl daemon-reload
+```
 
 > 之后可使用如下命令来使用ssr服务
 
